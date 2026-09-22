@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>أكاديمية فارس للإنجليزي</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; font-family: Tahoma, sans-serif; overflow-x: hidden; color: #333; }
+        .sidebar { background: #ffffff; color: #333; min-height: 100vh; padding: 20px; border-left: 1px solid #dee2e6; transition: all 0.3s ease; box-shadow: 2px 0 5px rgba(0,0,0,0.05); }
+        .sidebar.hidden { display: none; }
+        .sidebar a { color: #495057; text-decoration: none; display: block; padding: 6px 12px; border-radius: 4px; margin-bottom: 4px; background: #f8f9fa; border: 1px solid #e9ecef; }
+        .sidebar a:hover, .sidebar a.active { background: #0d6efd; color: #fff; border-color: #0d6efd; }
+        .video-container { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; background: #000; border-radius: 8px; overflow: hidden; }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- القائمة الجانبية باللون الأبيض -->
+        <div id="sidebarMenu" class="col-md-3 sidebar">
+            <button class="btn btn-sm btn-outline-dark w-100 mb-3 fw-bold" onclick="toggleSidebar()">📂 إخفاء / إظهار القائمة</button>
+            <h3 class="text-dark">🎓 أكاديمية فارس</h3>
+            <p class="text-muted small">تحكم كامل بالترتيب والدروس</p>
+            
+            <!-- 📊 عداد التقدم -->
+            <div class="card bg-light text-dark p-2 mb-3 border">
+                <div class="d-flex justify-content-between small mb-1 fw-bold">
+                    <span>التقدم: {{ completed_count|default(0) }}/{{ total_lessons|default(0) }}</span>
+                    <span>{{ progress_percent|default(0) }}%</span>
+                </div>
+                <div class="progress" style="height: 8px; background-color: #e9ecef;">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ progress_percent|default(0) }}%;"></div>
+                </div>
+            </div>
+
+            <!-- 🏆 زر الشهادة المشروط -->
+            <div class="mb-3">
+                {% if progress_percent|default(0) >= 100 %}
+                    <a href="/certificate?name=Fares" class="btn btn-warning w-100 fw-bold shadow-sm">🎓 استلام الشهادة (English)</a>
+                {% else %}
+                    <button class="btn btn-secondary w-100 fw-bold text-light" disabled>🔒 الشهادة مقفولة (أكمل 100%)</button>
+                {% endif %}
+            </div>
+            <hr>
+
+            {% for lvl, lessons in level_structure.items() %}
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <h5 class="text-primary m-0 fw-bold">{{ lvl }}</h5>
+                    <a href="/add_lesson?level={{ lvl }}" class="btn btn-sm btn-success px-2 py-0 fw-bold" title="إضافة درس جديد">+ إضافة</a>
+                </div>
+                <div class="mt-2">
+                    {% for l in lessons %}
+                        <a href="/?lesson_id={{ l.id }}" class="{% if current_lesson and current_lesson.id == l.id %}active{% endif %}">
+                            <span class="badge bg-secondary me-1">{{ l.order }}</span> {{ l.title }}
+                        </a>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- محتوى الدرس -->
+        <div id="mainContent" class="col-md-9 p-4">
+            <button class="btn btn-outline-dark mb-3 fw-bold" onclick="toggleSidebar()">📂 إخفاء / إظهار القائمة</button>
+
+            {% if current_lesson %}
+                <div class="card shadow-sm p-4 mb-4 bg-white border-0">
+                    <h2 class="text-dark">{{ current_lesson.title }}</h2>
+                    <p class="text-muted">{{ current_lesson.description }}</p>
+
+                    <div class="video-container mb-3">
+                        <iframe src="https://www.youtube-nocookie.com/embed/{{ current_lesson.youtube_id }}?rel=0&modestbranding=1"
+                                title="YouTube video player"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen>
+                        </iframe>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-3">
+                        {% if prev_id %}
+                            <a href="/?lesson_id={{ prev_id }}" class="btn btn-outline-secondary">⬅️ الدرس السابق</a>
+                        {% else %}
+                            <div></div>
+                        {% endif %}
+                        {% if next_id %}
+                            <a href="/?lesson_id={{ next_id }}" class="btn btn-primary">الدرس التالي ➡️</a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById("sidebarMenu");
+        const mainContent = document.getElementById("mainContent");
+        if (sidebar.classList.contains("hidden")) {
+            sidebar.classList.remove("hidden");
+            mainContent.classList.remove("col-md-12");
+            mainContent.classList.add("col-md-9");
+        } else {
+            sidebar.classList.add("hidden");
+            mainContent.classList.remove("col-md-9");
+            mainContent.classList.add("col-md-12");
+        }
+    }
+</script>
+</body>
+</html>
